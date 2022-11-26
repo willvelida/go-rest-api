@@ -87,7 +87,7 @@ jobs:
           cache: true
 
       - name: 'Build Project'
-        run: go build ./cmd -v
+        run: go build ./cmd
         continue-on-error: false
 
       - name: 'Test project'
