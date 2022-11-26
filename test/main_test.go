@@ -2,10 +2,12 @@ package test
 
 import (
 	"bytes"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
+	"github.com/gorilla/mux"
 	"github.com/willvelida/go-rest-api/pkg/handlers"
 )
 
@@ -29,23 +31,34 @@ func TestGetAllBooks(t *testing.T) {
 	}
 }
 
-/*
 func TestGetBook(t *testing.T) {
-	req, err := http.NewRequest("GET", "/books", nil)
-	if err != nil {
-		t.Fatal(err)
+	// Add a table-driven structure to test
+	testBook := []struct {
+		id     string
+		title  string
+		author string
+		desc   string
+	}{
+		{"1", "The Hobbit", "J.R.R. Tolkien", "A hobbit is a small human-like creature that enjoys a comfortable, quiet life, usually in a hobbit-hole in the side of a hill. Hobbits are generally peace-loving folk, but they can be fierce fighters when their homes and ways of life are threatened."},
 	}
-	q := req.URL.Query()
-	q.Add("id", "1")
-	rr := httptest.NewRecorder()
-	req.URL.RawQuery = q.Encode()
-	handler := http.HandlerFunc(handlers.GetBook)
-	handler.ServeHTTP(rr, req)
-	if status := rr.Code; status != http.StatusOK {
-		t.Errorf("handler returned wrong status code: got %v want %v", status, http.StatusOK)
+
+	for _, tc := range testBook {
+		path := fmt.Sprintf("/books/%s", tc.id)
+		req, err := http.NewRequest("GET", path, nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		rr := httptest.NewRecorder()
+		router := mux.NewRouter()
+		router.HandleFunc("/books/{id}", handlers.GetBook).Methods("GET")
+		router.ServeHTTP(rr, req)
+
+		if status := rr.Code; status != http.StatusOK {
+			t.Errorf("handler returned wrong status code: got %v want %v", status, http.StatusOK)
+		}
 	}
 }
-*/
 
 func TestGetBookNotFound(t *testing.T) {
 	req, err := http.NewRequest("GET", "/books", nil)
