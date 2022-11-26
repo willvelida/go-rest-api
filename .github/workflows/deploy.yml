@@ -47,7 +47,7 @@ jobs:
 
       - name: 'Terraform Validate'
         id: validate
-        run: terraform validate -no-color
+        run: terraform validate -no-color -var="rg_name=${{ secrets.RG_NAME }}" -var="location=${{ secrets.LOCATION }}" -var="asp_name=${{ secrets.ASP_NAME }}" -var="app_name=${{ secrets.APP_NAME }}"
         continue-on-error: false
 
       - name: 'Terraform Plan'
@@ -65,6 +65,7 @@ jobs:
 
   deploy-app-service:
     name: 'Deploy Go API'
+    needs: 'deploy-terraform'
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -85,15 +86,11 @@ jobs:
           go-version: '>=1.17.0'
           cache: true
 
-      - name: 'Install dependencies'
-        run: |
-          go get .
-
       - name: 'Build Project'
-        run: go build -v
+        run: go build . -v
         continue-on-error: false
 
       - name: 'Test project'
         working-directory: test
-        run: go test -v
+        run: go test -v .
         continue-on-error: false
