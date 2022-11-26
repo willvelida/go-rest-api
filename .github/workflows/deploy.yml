@@ -1,1 +1,53 @@
+name: 'Deploy Go REST API sample'
 
+on:
+  push:
+    branches:
+      - "main"
+
+jobs:
+  deploy-terraform:
+    name: 'Deploy terraform file'
+    runs-on: ubuntu-latest
+    env:
+      ARM_CLIENT_ID: ${{ secrets.AZURE_AD_CLIENT_ID }}
+      ARM_CLIENT_SECRET: ${{ secrets.AZURE_AD_CLIENT_SECRET }}
+      ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      ARM_TENANT_ID: ${{ secrets.AZURE_AD_TENANT_ID }}
+    
+    defaults:
+      run:
+        shell: bash
+        working-directory: infra
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_version: 1.3.5
+      
+      - name: 'Terraform Format'
+        id: fmt
+        run: terraform fmt -check
+        continue-on-error: true
+
+      - name: 'Terraform Init'
+        id: init
+        run: terraform init
+
+      - name: 'Terraform Validate'
+        id: validate
+        run: terraform validate -no-color
+        continue-on-error: false
+
+      - name: 'Terraform Plan'
+        id: plan
+        run: terraform plan -no-color
+        continue-on-error: false
+
+      - name: 'Terraform Apply'
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: terraform apply -auto-approve -input=false

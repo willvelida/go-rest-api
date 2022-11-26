@@ -1,4 +1,10 @@
 terraform {
+  backend "azurerm" {
+    resource_group_name = "willvtfstates"
+    storage_account_name = "willvstf"
+    container_name = "tfstate"
+    key = "gowebapp.tfstate"
+  }
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
@@ -11,6 +17,8 @@ terraform {
 provider "azurerm" {
   features {}
 }
+
+data "azurerm_client_config" "current" {}
 
 # Generate a random integer to create a globally unique name
 resource "random_integer" "ri" {
