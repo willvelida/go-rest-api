@@ -29,6 +29,7 @@ func TestGetAllBooks(t *testing.T) {
 	}
 }
 
+/*
 func TestGetBook(t *testing.T) {
 	req, err := http.NewRequest("GET", "/books", nil)
 	if err != nil {
@@ -44,6 +45,7 @@ func TestGetBook(t *testing.T) {
 		t.Errorf("handler returned wrong status code: got %v want %v", status, http.StatusOK)
 	}
 }
+*/
 
 func TestGetBookNotFound(t *testing.T) {
 	req, err := http.NewRequest("GET", "/books", nil)
