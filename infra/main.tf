@@ -20,21 +20,15 @@ provider "azurerm" {
 
 data "azurerm_client_config" "current" {}
 
-# Generate a random integer to create a globally unique name
-resource "random_integer" "ri" {
-  min = 10000
-  max = 99999
-}
-
 # Create a resource group
 resource "azurerm_resource_group" "rg" {
-  name     = "rg-go-rest-api-${random_integer.ri.result}"
-  location = "australiaeast"
+  name     = var.rg_name
+  location = var.location
 }
 
 # Create the Linux App Service Plan
 resource "azurerm_service_plan" "asp" {
-  name                = "asp-${random_integer.ri.result}"
+  name                = var.asp_name
   location            = azurerm_resource_group.rg.location
   resource_group_name = azurerm_resource_group.rg.name
   os_type             = "Linux"
@@ -42,7 +36,7 @@ resource "azurerm_service_plan" "asp" {
 }
 
 resource "azurerm_linux_web_app" "webapp" {
-  name                = "webapp-${random_integer.ri.result}"
+  name                = var.app_name
   location            = azurerm_resource_group.rg.location
   resource_group_name = azurerm_resource_group.rg.name
   service_plan_id     = azurerm_service_plan.asp.id
