@@ -16,6 +16,7 @@ func main() {
 	router.HandleFunc("/books/{id}", handlers.GetBook).Methods(http.MethodGet)
 	router.HandleFunc("/books/{id}", handlers.UpdateBook).Methods(http.MethodPut)
 	router.HandleFunc("/books/{id}", handlers.DeleteBook).Methods(http.MethodDelete)
+	router.HandleFunc("/health", handlers.HealthCheckHandler)
 
 	log.Println("API is running")
 	http.ListenAndServe(":8080", router)
