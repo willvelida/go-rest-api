@@ -6,6 +6,7 @@ on:
       - "main"
 
 jobs:
+  # Adding job for terraform
   deploy-terraform:
     name: 'Deploy terraform file'
     runs-on: ubuntu-latest
