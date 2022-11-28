@@ -54,7 +54,7 @@ resource "azurerm_log_analytics_workspace" "law" {
 
 # Container App Environment
 resource "azapi_resource" "env" {
-  type = "Microsoft.App/managedEnvironments@2022-06-01-preview"
+  type = "Microsoft.App/managedEnvironments@2022-03-01"
   name = "env${random_id.random_deployment_suffix.hex}"
   location = azurerm_resource_group.rg.location
   parent_id = azurerm_resource_group.rg.id
@@ -72,7 +72,7 @@ resource "azapi_resource" "env" {
 }
 
 resource "azapi_resource" "containerapp" {
- type = "Microsoft.App/containerApps@2022-06-01-preview"
+ type = "Microsoft.App/containerApps@2022-03-01"
  name = "book-api"
  location = azurerm_resource_group.rg.location
  parent_id = azapi_resource.env.id
@@ -82,7 +82,7 @@ resource "azapi_resource" "containerapp" {
       activeRevisionsMode = "Multiple"
       ingress = {
         allowInsecure = true
-        exposedPort = 80
+        targetPort = 80
         external = true
         transport = "http"
       }
