@@ -24,6 +24,10 @@ provider "azurerm" {
 
 data "azurerm_client_config" "current" {}
 
+resource "random_id" "random_deployment_suffix" {
+  byte_length = 4
+}
+
 # Create a resource group
 resource "azurerm_resource_group" "rg" {
   name     = "rg-go-rest-api"
@@ -32,7 +36,7 @@ resource "azurerm_resource_group" "rg" {
 
 # azure container registry
 resource "azurerm_container_registry" "acr" {
-  name                = "acrgorestapi"
+  name                = "acr${random_id.random_deployment_suffix.hex}"
   resource_group_name = azurerm_resource_group.rg.name
   location            = azurerm_resource_group.rg.location
   sku = "Basic"
@@ -41,7 +45,7 @@ resource "azurerm_container_registry" "acr" {
 
 # log analytics workspace
 resource "azurerm_log_analytics_workspace" "law" {
-  name = "law-go-rest-api"
+  name = "law${random_id.random_deployment_suffix.hex}"
   location = azurerm_resource_group.rg.location
   resource_group_name = azurerm_resource_group.rg.name
   sku = "PerGB2018"
@@ -51,7 +55,7 @@ resource "azurerm_log_analytics_workspace" "law" {
 # Container App Environment
 resource "azapi_resource" "env" {
   type = "Microsoft.App/managedEnvironments@2022-06-01-preview"
-  name = "env-go-rest-api"
+  name = "env${random_id.random_deployment_suffix.hex}"
   location = azurerm_resource_group.rg.location
   parent_id = azurerm_resource_group.rg.id
   body = jsonencode({
