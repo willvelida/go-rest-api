@@ -10,10 +10,6 @@ terraform {
       source  = "hashicorp/azurerm"
       version = ">= 3.0.0"
     }
-    azapi = {
-      source = "Azure/azapi"
-      version = "0.4.0"
-    }
   }
   required_version = ">= 0.13"
 }
@@ -43,79 +39,22 @@ resource "azurerm_container_registry" "acr" {
   admin_enabled = true
 }
 
-# log analytics workspace
-resource "azurerm_log_analytics_workspace" "law" {
-  name = "law${random_id.random_deployment_suffix.hex}"
-  location = azurerm_resource_group.rg.location
+# Create the Linux App Service Plan
+resource "azurerm_service_plan" "asp" {
+  name                = "asp${random_id.random_deployment_suffix.hex}"
+  location            = azurerm_resource_group.rg.location
   resource_group_name = azurerm_resource_group.rg.name
-  sku = "PerGB2018"
-  retention_in_days = 30
+  os_type             = "Linux"
+  sku_name            = "B1"
 }
 
-# Container App Environment
-resource "azapi_resource" "env" {
-  type = "Microsoft.App/managedEnvironments@2022-03-01"
-  name = "env${random_id.random_deployment_suffix.hex}"
-  location = azurerm_resource_group.rg.location
-  parent_id = azurerm_resource_group.rg.id
-  body = jsonencode({
-    properties = {
-      appLogsConfiguration = {
-        destination = "log-analytics"
-        logAnalyticsConfiguration = {
-          customerId = azurerm_log_analytics_workspace.law.workspace_id
-          sharedKey = azurerm_log_analytics_workspace.law.primary_shared_key
-        }
-      }
-    }
-  })
-}
-
-resource "azapi_resource" "containerapp" {
- type = "Microsoft.App/containerApps@2022-03-01"
- name = "bookapi"
- location = azurerm_resource_group.rg.location
- parent_id = azapi_resource.env.id
- body = jsonencode({
-  properties = {
-    configuration = {
-      activeRevisionsMode = "Multiple"
-      ingress = {
-        allowInsecure = true
-        targetPort = 80
-        external = true
-        transport = "http"
-      }
-      registries = [
-        {
-          server = azurerm_container_registry.acr.login_server
-          username = azurerm_container_registry.acr.admin_username
-          passwordSecretRef = "containerregistry-password"
-        }
-      ]
-      secrets = [
-        {
-          name = "containerregistry-password"
-          value = azurerm_container_registry.acr.admin_password
-        }
-      ]
-    }
-    template = {
-      containers = [
-        {
-          image = "mcr.microsoft.com/azuredocs/containerapps-helloworld:latest"
-          name = "book-api"
-          resources = {
-            cpu = 0.5
-            memory = "1.0Gi"
-          }
-        }
-      ]
-      scale = {
-        minReplicas = 1
-        maxReplicas = 1
-      }
-    }
+resource "azurerm_linux_web_app" "webapp" {
+  name                = "app${random_id.random_deployment_suffix.hex}"
+  location            = azurerm_resource_group.rg.location
+  resource_group_name = azurerm_resource_group.rg.name
+  service_plan_id     = azurerm_service_plan.asp.id
+  https_only          = true
+  site_config {
+    always_on = true
   }
- })
 }
