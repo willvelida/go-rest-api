@@ -73,7 +73,7 @@ resource "azapi_resource" "env" {
 
 resource "azapi_resource" "containerapp" {
  type = "Microsoft.App/containerApps@2022-03-01"
- name = "book-api"
+ name = "bookapi"
  location = azurerm_resource_group.rg.location
  parent_id = azapi_resource.env.id
  body = jsonencode({
