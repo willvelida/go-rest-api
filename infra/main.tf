@@ -37,6 +37,9 @@ resource "azurerm_container_registry" "acr" {
   location            = azurerm_resource_group.rg.location
   sku = "Basic"
   admin_enabled = true
+  identity {
+    type = "SystemAssigned"
+  }
 }
 
 # Create the Linux App Service Plan
@@ -57,4 +60,13 @@ resource "azurerm_linux_web_app" "webapp" {
   site_config {
     always_on = true
   }
+  identity {
+    type = "SystemAssigned"
+  }
 }
+
+resource "azurerm_role_assignment" "acrPull" {
+  scope = azurerm_container_registry.acr.id
+  role_definition_name = "AcrPull"
+  principal_id = azurerm_linux_web_app.webapp.identity.0.principal_id
+} 
