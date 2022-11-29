@@ -105,7 +105,7 @@ jobs:
       - name: Get ACR Credentials
         id: getacrcreds
         run: |
-          loginServer=$(az acr list --resource-group ${{ secrets.AZURE_RG }} --query "[0].loginServer" -o tsv)
+          loginServer=$(az acr list --resource-group ${{ secrets.RG_NAME }} --query "[0].loginServer" -o tsv)
           loginName=$(az acr credential show -n ${{ steps.getacrname.outputs.acrName }} --resource-group ${{ secrets.RG_NAME }} --query username -o tsv)
           password=$(az acr credential show -n ${{ steps.getacrname.outputs.acrName }} --resource-group ${{ secrets.RG_NAME }} --query "passwords[0].value" -o tsv)
           echo "::set-output name=loginServer::$loginServer"
