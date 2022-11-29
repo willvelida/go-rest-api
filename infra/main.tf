@@ -51,6 +51,7 @@ resource "azurerm_service_plan" "asp" {
   sku_name            = "B1"
 }
 
+# create linux web app
 resource "azurerm_linux_web_app" "webapp" {
   name                = "app${random_id.random_deployment_suffix.hex}"
   location            = azurerm_resource_group.rg.location
@@ -65,6 +66,7 @@ resource "azurerm_linux_web_app" "webapp" {
   }
 } 
 
+# Create role assignment
 resource "azurerm_role_assignment" "acrPull" {
   scope = azurerm_container_registry.acr.id
   role_definition_name = "AcrPull"
