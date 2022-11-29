@@ -95,3 +95,35 @@ jobs:
         working-directory: test
         run: go test . -v
         continue-on-error: false
+
+      - name: Get ACR name
+        id: getacrname
+        run: |
+          acrName=$(az acr list --resource-group ${{ secrets.RG_NAME }} --query "[0].name" -o tsv)
+          echo "::set-output name=acrName::$acrName"
+      
+      - name: Get ACR Credentials
+        id: getacrcreds
+        run: |
+          loginServer=$(az acr list --resource-group ${{ secrets.AZURE_RG }} --query "[0].loginServer" -o tsv)
+          loginName=$(az acr credential show -n ${{ steps.getacrname.outputs.acrName }} --resource-group ${{ secrets.RG_NAME }} --query username -o tsv)
+          password=$(az acr credential show -n ${{ steps.getacrname.outputs.acrName }} --resource-group ${{ secrets.RG_NAME }} --query "passwords[0].value" -o tsv)
+          echo "::set-output name=loginServer::$loginServer"
+          echo "::set-output name=loginName::$loginName"
+          echo "::set-output name=password::$password"
+
+      - name: 'Build and Push API Image to ACR'
+        uses: azure/docker-login@v1
+        with:
+          login-server: ${{ steps.getacrcreds.outputs.loginServer }}
+          username: ${{ steps.getacrname.outputs.acrName }}
+          password: ${{ steps.getacrcreds.outputs.password }}
+      - run: |
+          docker build . -t ${{ steps.getacrcreds.outputs.loginServer }}/booksapi:${{ github.sha }}
+          docker push ${{ steps.getacrcreds.outputs.loginServer }}/booksapi:${{ github.sha }}
+
+      - name: 'Deploy to App Service'
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: ${{ secrets.APP_NAME }}
+          images: ${{ steps.getacrcreds.outputs.loginServer }}/booksapi:${{ github.sha }}
